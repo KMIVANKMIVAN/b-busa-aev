@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import * as bcrypt from 'bcrypt';
 
 import { JwtService } from '@nestjs/jwt';
-import { Usuario } from '../usuarios/entities/usuario.entity';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -11,21 +16,46 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(ci: string, contrasenia: string): Promise<any> {
-    const user = await this.usuariosService.findOneByUserCi(ci);
-    if (user) {
+  async signIn(ci: string, contrasenia: string): Promise<any> {
+    try {
+      const user = await this.usuariosService.findOneByUserCi(ci);
+      if (!user) {
+        throw new BadRequestException({
+          error: `El Usuario con CI ${ci} NO Existe`,
+          message: `Usuario con CI ${ci} no fue encontrado`,
+        });
+      }
       const isMatch = await bcrypt.compare(contrasenia, user.contrasenia);
       if (isMatch) {
-        const { contrasenia, ...result } = user;
-        return result;
+        const payload = {
+          sub: user.id,
+          username: user.ci,
+          camb_contra: user.se_cambiado_cntr,
+          // roles: user.roles,
+        };
+        return {
+          access_token: await this.jwtService.signAsync(payload),
+        };
+      } else {
+        throw new UnauthorizedException({
+          statusCode: 401,
+          error: `Se introdujo una contrasena Incorecta`,
+          message: `Se introdujo una contrasena incorecta vuelva a intentarlo`,
+        });
+      }
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (signIn): ${error}`,
+          message: `Error del Servidor en (signIn): ${error}`,
+        });
       }
     }
-    return null;
-  }
-  async generateJWT(user: Usuario) {
-    const payload = { sub: user.id, username: user.ci };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 }

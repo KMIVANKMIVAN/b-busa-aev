@@ -5,23 +5,17 @@ import {
   MaxLength,
   IsBoolean,
   IsOptional,
+  IsNumber,
+  IsArray,
+  ArrayNotEmpty,
+  ArrayMinSize,
 } from 'class-validator';
 
 export class CreateUsuarioDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100, { message: 'La longitud maxima es de 100 caracteres' })
-  sucursal: string;
-
-  /* @IsString()
-  @IsNotEmpty()
   @MaxLength(50, { message: 'La longitud maxima es de 50 caracteres' })
-  departamento: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50, { message: 'La longitud maxima es de 50 caracteres' })
-  nombres: string; */
+  nombres: string;
 
   @IsString()
   @IsNotEmpty()
@@ -45,9 +39,21 @@ export class CreateUsuarioDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(70, { message: 'La longitud maxima es de 70 caracteres' })
   contrasenia: string;
 
-  @IsString()
   @IsBoolean()
-  estado: boolean;
+  se_cambiado_cntr: boolean;
+
+  @IsBoolean()
+  es_activo: boolean;
+
+  @IsNumber()
+  @IsNotEmpty()
+  sucursal_id: number;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMinSize(1)
+  roles: number[]; // Array de IDs de roles
 }

@@ -4,10 +4,12 @@ import { SucursalesController } from './sucursales.controller';
 import { Sucursale } from './entities/sucursale.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { DepartamentosModule } from '../departamentos/departamentos.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Sucursale])],
+  imports: [TypeOrmModule.forFeature([Sucursale]), DepartamentosModule],
   controllers: [SucursalesController],
   providers: [SucursalesService],
-  exports: [SucursalesService],
+  exports: [TypeOrmModule, SucursalesService],
 })
 export class SucursalesModule {}
