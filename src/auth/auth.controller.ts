@@ -13,12 +13,19 @@ import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: Record<string, any>) {
     return this.authService.signIn(signInDto.ci, signInDto.contrasenia);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('hola')
+  hola() {
+    return 'hola';
+    // return this.authService.signIn(signInDto.ci, signInDto.contrasenia);
   }
 
   @UseGuards(AuthGuard)

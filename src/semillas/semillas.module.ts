@@ -22,5 +22,7 @@ import { UsuariosModule } from '../usuarios/usuarios.module';
   ],
   controllers: [SemillasController],
   providers: [SemillasService],
+  // exports: [TypeOrmModule],
+
 })
-export class SemillasModule {}
+export class SemillasModule { }

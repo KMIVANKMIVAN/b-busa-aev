@@ -16,7 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly usuariosService: UsuariosService) {}
+  constructor(private readonly usuariosService: UsuariosService) { }
 
   @UseGuards(AuthGuard)
   @Post()
@@ -37,7 +37,7 @@ export class UsuariosController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('buscarci/:ci')
+  @Get('buscarci/:nomci')
   findOneCi(@Param('nomci') nomci: string) {
     return this.usuariosService.findOneCi(nomci);
   }
@@ -57,7 +57,7 @@ export class UsuariosController {
     return this.usuariosService.updateContrasenia(+id, updateUsuarioDto);
   } */
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Patch('updatepw/:id')
   updateContrasenia(
     @Param('id') id: number,

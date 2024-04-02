@@ -10,7 +10,6 @@ import { RolesModule } from './roles/roles.module';
 import { DepartamentosModule } from './departamentos/departamentos.module';
 import { SucursalesModule } from './sucursales/sucursales.module';
 import { SemillasModule } from './semillas/semillas.module';
-// import { AuthModule } from './auth/auth.module';
 
 import { Usuario } from './usuarios/entities/usuario.entity';
 import { Role } from './roles/entities/role.entity';
@@ -54,9 +53,8 @@ import { AuthModule } from './auth/auth.module';
       entities: [Usuario, Role, Departamento, Sucursale],
       synchronize: true, // Utilizar 'false' en producción
     }), */
-    // AuthModule,
     SemillasModule,
     AuthModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -23,7 +23,7 @@ export class UsuariosService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(Sucursale) // Inyecta el repositorio de Role
     private readonly sucursaleRepository: Repository<Sucursale>,
-  ) {}
+  ) { }
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
     try {
@@ -155,6 +155,7 @@ export class UsuariosService {
 
   async findOneCi(ci: string): Promise<Usuario[] | undefined> {
     try {
+      console.log("ci", ci);
       const users = await this.usuarioRepository
         .createQueryBuilder('usuarios')
         .where('usuarios.ci ILIKE :ci', { ci: `%${ci}%` }) // Corrección aquí
@@ -186,7 +187,7 @@ export class UsuariosService {
     }
   }
 
-  async findOneByUserCi(ci: string): Promise<Usuario> {
+  /* async findOneByUserCi(ci: string): Promise<Usuario> {
     try {
       const user = await this.usuarioRepository.findOne({ where: { ci } });
       if (!user) {
@@ -207,6 +208,32 @@ export class UsuariosService {
           statusCode: 500,
           error: `Error del Servidor en (findOneByUserCi): ${error}`,
           message: `Error del Servidor en (findOneByUserCi): ${error}`,
+        });
+      }
+    }
+  } */
+  async findOneByUserCi(ci: string): Promise<Usuario> {
+    try {
+      const user = await this.usuarioRepository.findOne({
+        where: { ci },
+        relations: ['roles'], // Especifica que también quieres cargar los roles
+      });
+      if (!user) {
+        throw new BadRequestException({
+          statusCode: 400,
+          error: `Usuario con CI ${ci} NO Existe`,
+          message: `Usuario con CI ${ci} no fue encontrado`,
+        });
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (findOneByUserCi): ${error.message}`,
+          message: `Error del Servidor en (findOneByUserCi): ${error.message}`,
         });
       }
     }
@@ -288,6 +315,7 @@ export class UsuariosService {
       );
       // Actualiza la contraseña del usuario en la base de datos
       user.contrasenia = hashedPassword;
+      user.se_cambiado_cntr = true;
 
       // Guarda los cambios
       const updatedUser = await this.usuarioRepository.save(user);

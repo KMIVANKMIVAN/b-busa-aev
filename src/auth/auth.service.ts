@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     private usuariosService: UsuariosService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async signIn(ci: string, contrasenia: string): Promise<any> {
     try {
@@ -27,14 +27,15 @@ export class AuthService {
       }
       const isMatch = await bcrypt.compare(contrasenia, user.contrasenia);
       if (isMatch) {
+        const roles = user.roles.map(role => role.id);
         const payload = {
           sub: user.id,
           username: user.ci,
           camb_contra: user.se_cambiado_cntr,
-          // roles: user.roles,
+          roles: roles, // Incluyendo los roles en el payload
         };
         return {
-          access_token: await this.jwtService.signAsync(payload),
+          tk: await this.jwtService.signAsync(payload),
         };
       } else {
         throw new UnauthorizedException({
