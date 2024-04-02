@@ -63,6 +63,9 @@ export class UsuariosService {
         sucursal_id: sucursalExistente, // Asigna la sucursal al usuario
       });
 
+      // return this.usuarioRepository.save(usuario);
+      delete usuario.contrasenia; // Eliminar el campo de contraseña del usuario
+
       return this.usuarioRepository.save(usuario);
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -86,6 +89,8 @@ export class UsuariosService {
           message: `No hay usuarios en la base de datos`,
         });
       }
+      // return users;
+      users.forEach((user) => delete user.contrasenia);
       return users;
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -101,6 +106,31 @@ export class UsuariosService {
   }
 
   async findOne(id: number): Promise<Usuario | undefined> {
+    try {
+      const user = await this.usuarioRepository.findOne({ where: { id } });
+      if (!user) {
+        throw new BadRequestException({
+          error: `El Usuario con ID ${id} NO Existe`,
+          message: `Usuario con ID ${id} no fue encontrado`,
+        });
+      }
+      // return user;
+      delete user.contrasenia; // Eliminar el campo de contraseña del usuario
+      return user;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (findOne): ${error}`,
+          message: `Error del Servidor en (findOne): ${error}`,
+        });
+      }
+    }
+  }
+
+  async findOnePw(id: number): Promise<Usuario | undefined> {
     try {
       const user = await this.usuarioRepository.findOne({ where: { id } });
       if (!user) {
@@ -137,6 +167,10 @@ export class UsuariosService {
           message: `Usuario con dato ${ci} no fue encontrado`,
         });
       }
+      // return users;
+      // Iterar sobre cada usuario y eliminar el campo de contraseña
+      users.forEach((user) => delete user.contrasenia);
+
       return users;
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -162,6 +196,8 @@ export class UsuariosService {
           message: `Usuario con CI ${ci} no fue encontrada`,
         });
       }
+      // return user;
+      // delete user.contrasenia; // Eliminar el campo de contraseña del usuario
       return user;
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -190,6 +226,9 @@ export class UsuariosService {
         });
       }
       const userUpdated = Object.assign(user, updateUsuarioDto);
+      // return await this.usuarioRepository.save(userUpdated);
+      delete userUpdated.contrasenia; // Eliminar el campo de contraseña del usuario actualizado
+
       return await this.usuarioRepository.save(userUpdated);
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -203,6 +242,114 @@ export class UsuariosService {
       }
     }
   }
+
+  async updateContrasenia(
+    id: number,
+    contraseniaAntigua: string,
+    updateUsuarioDto: UpdateUsuarioDto,
+  ): Promise<Partial<Usuario>> {
+    try {
+      const user = await this.findOnePw(id);
+      if (!user) {
+        throw new BadRequestException({
+          statusCode: 400,
+          error: `Usuario con ID ${id} NO Existe`,
+          message: `Usuario con ID ${id} no fue encontrada`,
+        });
+      }
+
+      // Verificar si la contraseña anterior coincide
+      const contraseniaCorrecta = await bcrypt.compare(
+        contraseniaAntigua,
+        user.contrasenia,
+      );
+
+      if (!contraseniaCorrecta) {
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'La contraseña anterior no es correcta',
+          message: 'La contraseña anterior no es correcta',
+        });
+      }
+
+      // Verificar si la nueva contraseña está presente
+      if (!updateUsuarioDto.contrasenia) {
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'La nueva contraseña no puede estar vacía',
+          message: 'La nueva contraseña no puede estar vacía',
+        });
+      }
+
+      // Hashea la nueva contraseña antes de actualizarla
+      const hashedPassword = await bcrypt.hash(
+        updateUsuarioDto.contrasenia,
+        10,
+      );
+      // Actualiza la contraseña del usuario en la base de datos
+      user.contrasenia = hashedPassword;
+
+      // Guarda los cambios
+      const updatedUser = await this.usuarioRepository.save(user);
+
+      // Elimina el campo de contraseña del objeto updatedUser
+      delete updatedUser.contrasenia;
+
+      return updatedUser; // Devuelve todos los datos excepto la contraseña
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (updateContrasenia): ${error}`,
+          message: `Error del Servidor en (updateContrasenia): ${error}`,
+        });
+      }
+    }
+  }
+
+  /* async updateContrasenia(
+    id: number,
+    updateUsuarioDto: UpdateUsuarioDto,
+  ): Promise<Partial<Usuario>> {
+    try {
+      const user = await this.findOne(id);
+      if (!user) {
+        throw new BadRequestException({
+          statusCode: 400,
+          error: `Usuario con ID ${id} NO Existe`,
+          message: `Usuario con ID ${id} no fue encontrada`,
+        });
+      }
+      // Hashea la nueva contraseña antes de actualizarla
+      const hashedPassword = await bcrypt.hash(
+        updateUsuarioDto.contrasenia,
+        10,
+      );
+      // Actualiza la contraseña del usuario en la base de datos
+      user.contrasenia = hashedPassword;
+
+      // Guarda los cambios
+      const updatedUser = await this.usuarioRepository.save(user);
+
+      // return updatedUser; // Devuelve todos los datos excepto la contraseña
+      // Elimina el campo de contraseña del objeto updatedUser
+      delete updatedUser.contrasenia;
+
+      return updatedUser; // Devuelve todos los datos excepto la contraseña
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (updateContrasenia): ${error}`,
+          message: `Error del Servidor en (updateContrasenia): ${error}`,
+        });
+      }
+    }
+  } */
 
   async remove(id: number): Promise<any> {
     try {

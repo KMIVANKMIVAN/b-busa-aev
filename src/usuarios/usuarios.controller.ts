@@ -48,6 +48,29 @@ export class UsuariosController {
     return this.usuariosService.update(+id, updateUsuarioDto);
   }
 
+  /* @UseGuards(AuthGuard)
+  @Patch('updatepw/:id')
+  updateContrasenia(
+    @Param('id') id: number,
+    @Body() updateUsuarioDto: UpdateUsuarioDto,
+  ) {
+    return this.usuariosService.updateContrasenia(+id, updateUsuarioDto);
+  } */
+
+  @UseGuards(AuthGuard)
+  @Patch('updatepw/:id')
+  updateContrasenia(
+    @Param('id') id: number,
+    @Body('contraseniaAntigua') contraseniaAntigua: string, // Nuevo parámetro
+    @Body() updateUsuarioDto: UpdateUsuarioDto,
+  ) {
+    return this.usuariosService.updateContrasenia(
+      id,
+      contraseniaAntigua,
+      updateUsuarioDto,
+    );
+  }
+
   @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: number) {
