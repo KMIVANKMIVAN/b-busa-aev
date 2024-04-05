@@ -11,6 +11,9 @@ import { Sucursale } from './entities/sucursale.entity';
 
 import { Departamento } from '../departamentos/entities/departamento.entity';
 
+// import { UsuariosService } from 'src/usuarios/usuarios.service';
+import { Usuario } from 'src/usuarios/entities/usuario.entity';
+
 @Injectable()
 export class SucursalesService {
   constructor(
@@ -18,7 +21,10 @@ export class SucursalesService {
     private readonly sucursaleRepository: Repository<Sucursale>,
     @InjectRepository(Departamento)
     private readonly departamentoRepository: Repository<Departamento>,
-  ) {}
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
+    // private usuariosService: UsuariosService,
+  ) { }
 
   async create(createSucursaleDto: CreateSucursaleDto) {
     try {
@@ -75,6 +81,72 @@ export class SucursalesService {
       }
     }
   }
+
+  async findAllPorDep(userId: number) {
+    try {
+      console.log("lo q llega", userId);
+
+      // Encuentra el usuario con su sucursal y el departamento de esa sucursal
+      const usuario = await this.usuarioRepository.findOne({
+        where: { id: userId },
+        relations: ['sucursal_id', 'sucursal_id.departamento_id'], // Asegúrate de que estas relaciones estén correctamente definidas
+      });
+
+      if (!usuario || !usuario.sucursal_id || !usuario.sucursal_id.departamento_id) {
+        throw new BadRequestException({
+          error: `No se encontró el usuario o su departamento asignado`,
+          message: `El usuario con ID ${userId} no tiene una sucursal o departamento asignado`,
+        });
+      }
+
+      // Encuentra todas las sucursales que pertenecen a ese departamento
+      const sucursales = await this.sucursaleRepository.find({
+        where: { departamento_id: { id: usuario.sucursal_id.departamento_id.id } },
+      });
+
+      if (!sucursales || sucursales.length === 0) {
+        throw new BadRequestException({
+          error: `No se encontraron sucursales para el departamento del usuario`,
+          message: `No hay sucursales asociadas al departamento del usuario con ID ${userId}`,
+        });
+      }
+
+      return sucursales;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del servidor en (findAllPorDep): ${error.message}`,
+          message: `Error del servidor en (findAllPorDep): ${error.message}`,
+        });
+      }
+    }
+  }
+
+  /* async findAllPorDep(id: number) {
+    try {
+      const sucursales = await this.sucursaleRepository.find();
+      if (!sucursales || sucursales.length === 0) {
+        throw new BadRequestException({
+          error: `No se encontraron sucursales`,
+          message: `No hay sucursales en la base de datos`,
+        });
+      }
+      return sucursales;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      } else {
+        throw new InternalServerErrorException({
+          statusCode: 500,
+          error: `Error del Servidor en (findAllPorDep): ${error}`,
+          message: `Error del Servidor en (findAllPorDep): ${error}`,
+        });
+      }
+    }
+  } */
 
   async findOne(id: number) {
     try {

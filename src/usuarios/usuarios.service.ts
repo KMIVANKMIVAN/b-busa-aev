@@ -27,6 +27,8 @@ export class UsuariosService {
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
     try {
+      console.log("--->", createUsuarioDto.contrasenia);
+
       const { roles, sucursal_id, ...userData } = createUsuarioDto; // Extrae los roles y sucursal_id del DTO
 
       // Comprueba si los roles proporcionados existen en la base de datos
@@ -155,7 +157,7 @@ export class UsuariosService {
 
   async findOneCi(ci: string): Promise<Usuario[] | undefined> {
     try {
-      console.log("ci", ci);
+      // console.log("ci", ci);
       const users = await this.usuarioRepository
         .createQueryBuilder('usuarios')
         .where('usuarios.ci ILIKE :ci', { ci: `%${ci}%` }) // Corrección aquí

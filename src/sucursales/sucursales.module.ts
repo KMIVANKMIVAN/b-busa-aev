@@ -5,11 +5,15 @@ import { Sucursale } from './entities/sucursale.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { DepartamentosModule } from '../departamentos/departamentos.module';
+import { UsuariosModule } from 'src/usuarios/usuarios.module';
+
+import { forwardRef } from '@nestjs/common';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Sucursale]), DepartamentosModule],
+  // imports: [TypeOrmModule.forFeature([Sucursale]), DepartamentosModule, UsuariosModule],
+  imports: [TypeOrmModule.forFeature([Sucursale]), DepartamentosModule, forwardRef(() => UsuariosModule)],
   controllers: [SucursalesController],
   providers: [SucursalesService],
   exports: [TypeOrmModule, SucursalesService],
 })
-export class SucursalesModule {}
+export class SucursalesModule { }

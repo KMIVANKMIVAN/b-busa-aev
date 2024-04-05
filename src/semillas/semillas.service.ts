@@ -66,10 +66,10 @@ export class SemillasService {
       await this.eliminarDatabase();
 
       await this.crearDepartamentos();
-      const sucursales = await this.crearSucursal();
-      const roles = await this.crearRol();
+      await this.crearRol();
+      await this.crearSucursal();
 
-      await this.crearUsuario(sucursales[0], roles[0]);
+      await this.crearUsuario();
 
       return true;
     } catch (error) {
@@ -145,7 +145,7 @@ export class SemillasService {
     return sucursales;
   }
 
-  async crearUsuario(sucursal: Sucursale, role: Role): Promise<Usuario[]> {
+  async crearUsuario(): Promise<Usuario[]> {
     const usuarios = [];
 
     for (const userData of SEMILLA_USUARIOS) {
@@ -156,11 +156,11 @@ export class SemillasService {
         ci: userData.ci,
         complemento: userData.complemento,
         correo: userData.correo,
-        contrasenia: userData.contrasenia,
         es_activo: userData.es_activo,
         se_cambiado_cntr: userData.se_cambiado_cntr,
         roles: roles.map((role) => role.id),
-        sucursal_id: sucursal.id,
+        sucursal_id: userData.sucursal_id,
+        contrasenia: userData.contrasenia,
       });
       usuarios.push(nuevoUsuario);
     }

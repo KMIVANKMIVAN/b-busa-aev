@@ -16,7 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('sucursales')
 export class SucursalesController {
-  constructor(private readonly sucursalesService: SucursalesService) {}
+  constructor(private readonly sucursalesService: SucursalesService) { }
 
   @UseGuards(AuthGuard)
   @Post()
@@ -28,6 +28,12 @@ export class SucursalesController {
   @Get()
   findAll() {
     return this.sucursalesService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/pordepartamento/:userId')
+  findAllPorDep(@Param('userId') userId: number) {
+    return this.sucursalesService.findAllPorDep(+userId);
   }
 
   @UseGuards(AuthGuard)
